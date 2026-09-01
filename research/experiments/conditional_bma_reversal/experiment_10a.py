@@ -1,3 +1,4 @@
+#Imports
 import datetime as dt
 from pathlib import Path
 
@@ -6,9 +7,11 @@ import sf_quant.data as sfd
 import sf_quant.performance as sfp
 from sf_backtester import BacktestDynamicConfig, BacktestDynamicRunner, SlurmConfig
 
+# Date setup
 start = dt.date(1996, 1, 1)
 end = dt.date(2024, 12, 31)
 
+# Directory setup
 temp_folder = Path("temp")
 temp_folder.mkdir(parents=True, exist_ok=True)
 signal_name_title = "Averaged Stratified Rev"
@@ -16,6 +19,7 @@ results_folder = Path("results/conditional_bma_reversal/experiment_10")
 
 results_folder.mkdir(parents=True, exist_ok=True)
 
+# Load data
 df = sfd.load_assets(
     start=start, 
     end=end, 
@@ -23,6 +27,7 @@ df = sfd.load_assets(
     in_universe=True
 )
 
+# Filter data
 processed_df = (
     df.sort("date", "barrid")
     .with_columns([
@@ -53,6 +58,7 @@ processed_df = (
     )
 )
 
+# Create alphas
 final_alphas = (
     processed_df.with_columns([
         pl.col("market_cap").qcut(5).over("date").to_physical().alias("cap_q"),
@@ -82,9 +88,11 @@ final_alphas = (
     .sort("date", "barrid")
 )
 
+# Save alpha folder directory (This is called in part b)
 alpha_path = temp_folder / "exp10_stratified_avg_alphas.parquet"
 final_alphas.write_parquet(alpha_path)
 
+# Get returns and forward returns for IC calculation
 returns = (
     sfd.load_assets(
         start=start, 
@@ -112,6 +120,7 @@ forward_returns = (
     .drop_nulls("return")
 )
 
+# Generate IC charts
 ics = sfp.generate_alpha_ics(alphas=final_alphas, rets=forward_returns, method="rank", window=22)
 
 sfp.generate_ic_chart(
@@ -128,6 +137,7 @@ sfp.generate_ic_chart(
     file_name=results_folder / "pearson_ic_chart.png"
 )
 
+# Run backtest
 slurm_config = SlurmConfig(n_cpus=8, mem="32G", time="03:00:00")
 backtest_config = BacktestDynamicConfig(
     signal_name="stratified_avg_reversal",

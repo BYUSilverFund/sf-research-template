@@ -1,3 +1,5 @@
+# The only thing that needs to change in this file is the signal_name, results_folder directory path and the target_active_risk that was used in the backtest. 
+# The rest of the code is generic and can be reused for other signals.
 import datetime as dt
 from pathlib import Path
 
@@ -106,38 +108,3 @@ summary_pd.columns = ["Mean Return", "Volatility", "Sharpe"]
 
 table_path = results_folder / "summary_table.png"
 save_table_image(summary_pd, "MVO Backtest Results", table_path)
-
-# Fama french regression
-# ff5 = (
-#     sfd.load_fama_french(start=start, end=end)
-#     .sort("date")
-#     .with_columns(pl.exclude("date").shift(-1))
-# )
-
-# regression_data = (
-#     portfolio_returns.join(other=ff5, on="date", how="left")
-#     .drop_nulls("return")
-#     .with_columns(pl.col("return").sub("rf").alias("return_rf"))
-#     .with_columns(pl.exclude("date").mul(100))
-# )
-
-# formula = "return_rf ~ mkt_rf + smb + hml + rmw + cma"
-# model = smf.ols(formula, regression_data.to_pandas())
-# results = model.fit()
-
-# regression_summary = pl.DataFrame(
-#     {
-#         "variable": results.params.index,
-#         "coefficient": results.params.values,
-#         "tstat": results.tvalues.values,
-#     }
-# )
-
-# Format for Matplotlib table
-# reg_pd = regression_summary.to_pandas()
-# reg_pd["coefficient"] = reg_pd["coefficient"].apply(lambda x: f"{x:.4f}")
-# reg_pd["tstat"] = reg_pd["tstat"].apply(lambda x: f"{x:.4f}")
-# reg_pd.columns = ["Variable", "Coefficient", "T-stat"]
-
-# reg_table_path = results_folder / "regression_table.png"
-# save_table_image(reg_pd, "MVO Regression (Daily %)", reg_table_path)
