@@ -1,4 +1,4 @@
-# Silver Fund Bayesian Reversal Repository
+# Silver Fund Research Repository Template
 
 ## Set Up
 
